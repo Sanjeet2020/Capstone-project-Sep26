@@ -1,15 +1,21 @@
 package com.sanj.projectcatalogueservice.controller;
 
+import com.sanj.projectcatalogueservice.dto.ProductDto;
 import com.sanj.projectcatalogueservice.model.Product;
+import com.sanj.projectcatalogueservice.service.IProductService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 public class ProductController {
+
+    private final IProductService productService;
+
+    public ProductController(IProductService productService) {
+        this.productService = productService;
+    }
 
     //API to get all products
     @GetMapping("/products")
@@ -24,7 +30,14 @@ public class ProductController {
     }
 
     @DeleteMapping("/products/{id}")
-    public void deleteProduct(int id) {
+    public void deleteProduct(@PathVariable long id) {
         // Logic to delete a product by its ID
+        boolean isDeleted = productService.deleteProduct(id);
+    }
+
+    @PostMapping("/products")
+    public ResponseEntity<Product> createProduct(@RequestBody ProductDto request) {
+        // Logic to create a new product
+        return ResponseEntity.ok(new Product());
     }
 }
