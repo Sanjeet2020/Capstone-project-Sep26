@@ -26,7 +26,8 @@ public class ProductController {
     @GetMapping("/products/{id}")
     public ResponseEntity<Product> getProductById(int id) {
         // Logic to retrieve a product by its ID
-        return ResponseEntity.ok(new Product());
+        Product product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
     }
 
     @DeleteMapping("/products/{id}")
@@ -38,6 +39,14 @@ public class ProductController {
     @PostMapping("/products")
     public ResponseEntity<Product> createProduct(@RequestBody ProductDto request) {
         // Logic to create a new product
-        return ResponseEntity.ok(new Product());
+        Product createdProduct = productService.createProduct(request);
+        return ResponseEntity.ok(createdProduct);
+    }
+
+    @PutMapping("/products/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable long id, @RequestBody ProductDto request) {
+        // Logic to update an existing product
+        Product updatedProduct = productService.updateProduct(id, request);
+        return ResponseEntity.ok(updatedProduct);
     }
 }

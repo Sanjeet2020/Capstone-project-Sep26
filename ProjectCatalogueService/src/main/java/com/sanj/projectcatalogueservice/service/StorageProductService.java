@@ -6,9 +6,11 @@ import com.sanj.projectcatalogueservice.model.Product;
 import com.sanj.projectcatalogueservice.model.enums.State;
 import com.sanj.projectcatalogueservice.repository.CategoryRepository;
 import com.sanj.projectcatalogueservice.repository.ProductRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+@Service
 public class StorageProductService implements IProductService {
 
     private final ProductRepository productRepository;
@@ -47,6 +49,21 @@ public class StorageProductService implements IProductService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Product updateProduct(long id, ProductDto request) {
+        Product product = productRepository.findById(id).orElse(null);
+        if (product != null) {
+            // Update the product fields with the values from the request
+            product.setName(request.getName());
+            product.setPrice(request.getPrice());
+            product.setDescription(request.getDescription());
+            product.setImageUrl(request.getImageUrl());
+            product.setLasUpdatedAt(new Date());
+            return productRepository.save(product);
+        }
+        return null;
     }
 
     private Category findOrCreateCategory(long id) {
