@@ -9,6 +9,7 @@ import com.sanj.projectcatalogueservice.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class StorageProductService implements IProductService {
@@ -31,7 +32,7 @@ public class StorageProductService implements IProductService {
         // Convert ProductDto to Product entity
         Product product = fromDto(request);
         //check category exists
-        product.setCategory(findOrCreateCategory(request.getCategory().getId()));
+        product.setCategory(findOrCreateCategory(request.getCategory()));
         product.setCreatedAt(new Date());
         product.setLasUpdatedAt(new Date());
         // Save the product to the database
@@ -66,24 +67,39 @@ public class StorageProductService implements IProductService {
         return null;
     }
 
-    private Category findOrCreateCategory(long id) {
-        Category category = categoryRepository.findById(id).orElse(null);
-        if(category == null || category.getName() == null) {
+    private Category findOrCreateCategory(Category category) {
+        if (category == null) {
             return null;
         }
-        return categoryRepository.findByName(category.getName()).orElseGet(() -> {
-            Category newCategory = new Category();
-            return categoryRepository.save(newCategory);
-        });
+
+        Optional<Category> existing = categoryRepository.findByName(category.getName());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        Date now = new Date();
+        //category.setId(null);
+        category.setCreatedAt(now);
+        category.setLasUpdatedAt(now);
+        return category;
     }
 
     private Product fromDto(ProductDto request) {
         Product product = new Product();
+        //product.setId(request.getId());
         product.setName(request.getName());
-        product.setPrice(request.getPrice());
         product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
         product.setImageUrl(request.getImageUrl());
-        //product.setCategory(request.getCategory());
+
+        if (request.getCategory() != null) {
+            Category category = new Category();
+            //category.setId(request.getCategory().getId());
+            category.setName(request.getCategory().getName());
+            category.setDescription(request.getCategory().getDescription());
+            category.setState(State.ACTIVE);
+            product.setCategory(category);
+        }
         return product;
     }
 }

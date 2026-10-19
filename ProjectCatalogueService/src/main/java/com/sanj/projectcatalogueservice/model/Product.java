@@ -1,15 +1,13 @@
 package com.sanj.projectcatalogueservice.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
+@Table(indexes = @Index(name = "idx_product_name",columnList = "name"))
 public class Product extends BaseEntity {
     private String name;
     private Double price; //BigDecimal in prod
