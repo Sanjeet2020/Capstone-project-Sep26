@@ -1,14 +1,21 @@
 package com.sanj.userauthservice.model;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Entity
+@Getter
+@Setter
+@Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
     private String email;
-    private String password;
+    private String passwordHash;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
