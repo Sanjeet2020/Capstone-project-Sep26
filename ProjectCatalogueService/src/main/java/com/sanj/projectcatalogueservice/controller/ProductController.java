@@ -1,8 +1,11 @@
 package com.sanj.projectcatalogueservice.controller;
 
+import com.sanj.projectcatalogueservice.dto.Pitch;
 import com.sanj.projectcatalogueservice.dto.ProductDto;
+import com.sanj.projectcatalogueservice.dto.ProductPitchDto;
 import com.sanj.projectcatalogueservice.model.Product;
 import com.sanj.projectcatalogueservice.service.IProductService;
+import com.sanj.projectcatalogueservice.service.PitchService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,9 +15,11 @@ import java.util.List;
 public class ProductController {
 
     private final IProductService productService;
+    private final PitchService pitchService;
 
-    public ProductController(IProductService productService) {
+    public ProductController(IProductService productService, PitchService pitchService) {
         this.productService = productService;
+        this.pitchService = pitchService;
     }
 
     //API to get all products
@@ -48,5 +53,21 @@ public class ProductController {
         // Logic to update an existing product
         Product updatedProduct = productService.updateProduct(id, request);
         return ResponseEntity.ok(updatedProduct);
+    }
+
+    @GetMapping("/products/{id}/pitch")
+    public ResponseEntity<ProductPitchDto> generatePitch(@PathVariable long id) {
+        if(id <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        Product product = productService.getProductById(id);
+        if (product == null) {
+            return ResponseEntity.notFound().build();
+        }
+        String pitch = pitchService.generatePitch(product);
+        ProductPitchDto productPitchDto = new ProductPitchDto();
+        productPitchDto.setId(product.getId());
+        productPitchDto.setPitch(pitch);
+        return ResponseEntity.ok(productPitchDto);
     }
 }
