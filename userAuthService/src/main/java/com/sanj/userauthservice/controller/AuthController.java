@@ -33,4 +33,13 @@ public class AuthController {
         userDto.setRole(user.getRole());
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody AuthRequest request) {
+        String token = authService.login(request);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        }
+        return ResponseEntity.ok(token);
+    }
 }
