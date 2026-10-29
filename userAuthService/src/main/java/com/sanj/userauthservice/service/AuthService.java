@@ -40,4 +40,13 @@ public class AuthService {
         // Generate and return JWT token
         return jwtService.generateToken(user);
     }
+
+    public String login(String email, String password) {
+        User user = userRepository.findByEmail(email);
+        if (user == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+            return null;
+        }
+        // Generate and return JWT token
+        return jwtService.generateToken(user);
+    }
 }

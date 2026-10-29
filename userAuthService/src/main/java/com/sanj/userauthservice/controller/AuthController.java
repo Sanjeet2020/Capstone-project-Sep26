@@ -1,24 +1,28 @@
 package com.sanj.userauthservice.controller;
 
 import com.sanj.userauthservice.dto.AuthRequest;
+import com.sanj.userauthservice.dto.LoginResponse;
 import com.sanj.userauthservice.dto.UserDto;
+import com.sanj.userauthservice.model.Role;
 import com.sanj.userauthservice.model.User;
 import com.sanj.userauthservice.service.AuthService;
+import com.sanj.userauthservice.service.JwtService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtService jwtService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, JwtService jwtService) {
         this.authService = authService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/signup")
@@ -35,11 +39,36 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody AuthRequest request) {
-        String token = authService.login(request);
+    public ResponseEntity<LoginResponse> login(@RequestBody AuthRequest request) {
+        String token = authService.login(request.getEmail(), request.getPassword());
         if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return ResponseEntity.ok(token);
+
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/validateToken")
+    public ResponseEntity<UserDto> validateToken(@RequestHeader("Authorization") String header) {
+        if (!header.startsWith("Bearer ")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            Claims claims = jwtService.parseToken(header.substring("Bearer ".length()));
+            UserDto dto = new UserDto();
+            dto.setEmail(claims.getSubject());
+            dto.setRole(Role.valueOf(claims.get("role", String.class)));
+            return ResponseEntity.ok(dto);
+        } catch (JwtException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @GetMapping("/healthcheck")
+    public ResponseEntity<String> healthCheck() {
+        return new ResponseEntity<>("OK", HttpStatus.OK);
     }
 }
