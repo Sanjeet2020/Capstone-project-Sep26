@@ -1,5 +1,6 @@
 package com.sanj.projectcatalogueservice.service;
 
+import com.sanj.projectcatalogueservice.client.GroqClient;
 import com.sanj.projectcatalogueservice.dto.GroqPitchResponseDto;
 import com.sanj.projectcatalogueservice.dto.Pitch;
 import com.sanj.projectcatalogueservice.model.Product;
@@ -21,13 +22,13 @@ public class PitchService {
     private static final String MODEL = "openai/gpt-oss-20b";
     private static final String SYSTEM_PROMPT = "You are a marketing copywriter for ShopNest, an online store. \"\n" +
             "            + \"You write short push notifications that make people want to open the app.";
-    private final RestTemplate restTemplate;
+    private final GroqClient groqClient;
     private final String apiKey;
 
-    public PitchService(RestTemplateBuilder restTemplateBuilder,
+    public PitchService(GroqClient groqClient,
                         @Value("${groq.api-key}") String apiKey,
                         @Value("${groq.url}") String groqUrl) {
-        this.restTemplate = restTemplateBuilder.build();
+        this.groqClient = groqClient;
         this.groqUrl = groqUrl;
         this.apiKey = apiKey;
     }
@@ -45,7 +46,7 @@ public class PitchService {
                             Map.of("role", "system", "content", SYSTEM_PROMPT),
                             Map.of("role", "user", "content", buildPrompt(product))));
 
-            GroqPitchResponseDto response = restTemplate.postForObject(groqUrl, body, GroqPitchResponseDto.class);
+            GroqPitchResponseDto response = groqClient.chat(body);
 
             String pitch = response.getChoices().get(0).getMessage().getContent();
             return pitch;
